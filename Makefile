@@ -42,8 +42,11 @@ login:
 	nansen login --api-key $(API_KEY)
 
 clean:
-	@echo "🧹 Cleaning up old reports..."
-	rm -f $(REPORT_FILE)
+	@echo "🧹 Archiving old report..."
+	@if [ -f $(REPORT_FILE) ]; then \
+		mv $(REPORT_FILE) daily_report_$$(date '+%Y%m%d_%H%M%S').bak; \
+		echo "📦 Old report archived"; \
+	fi
 
 # A quick test command to let you verify JSON output in your terminal before running the full suite
 test:
