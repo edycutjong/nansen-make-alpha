@@ -25,7 +25,14 @@ setup:
 
 auth:
 	@echo "🔐 Authenticating with Nansen (using .env)..."
-	nansen login
+	@if [ ! -f .env ]; then \
+		echo "❌ No .env file found. Create one with: echo 'NANSEN_API_KEY=your_key' > .env"; exit 1; \
+	fi
+	@KEY=$$(grep NANSEN_API_KEY .env | cut -d'=' -f2); \
+	if [ -z "$$KEY" ] || [ "$$KEY" = "your_api_key_here" ]; then \
+		echo "❌ Set your real API key in .env first"; exit 1; \
+	fi; \
+	nansen login --api-key $$KEY
 
 login:
 	@echo "🔐 Authenticating with Nansen (manual key)..."
