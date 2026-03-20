@@ -1,0 +1,5 @@
+# Environment Variables
+.env
+
+# Generated Reports
+daily_report.md
