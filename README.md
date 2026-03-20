@@ -11,13 +11,18 @@ On-chain data analysis is often plagued by heavy dashboards, slow browser tabs, 
 
 **Make Alpha** uses standard, zero-dependency `make` commands to orchestrate the new Nansen CLI. 
 
-Instead of manually typing 10 different queries every morning to check cross-chain flows, a single `make alpha` command natively executes a suite of Nansen CLI calls in the background, handles errors gracefully, and compiles a clean, human-readable `daily_report.md` locally on your machine.
+Instead of manually typing 15 different queries every morning to check cross-chain flows, a single `make alpha` command natively executes a suite of Nansen CLI calls in the background, handles errors gracefully, and compiles a clean, human-readable `daily_report.md` locally on your machine.
 
 ## ✨ Features
 - **Zero Bloat:** No Python, no `node_modules` (besides the CLI itself), no heavy frameworks. Just a standard UNIX `Makefile`.
 - **Fail-Soft Execution:** Uses native shell error-handling (`-` and `||`). If one chain's RPC endpoint is temporarily down, the `Makefile` catches the error, outputs a clean JSON error block into the report, and continues fetching the rest of your alpha.
-- **Multi-Chain Lens:** Automatically queries Smart Money flows, DEX trades, and Whale portfolios across Ethereum, Solana, Arbitrum, Base, and Optimism in one go.
+- **Multi-Chain Lens:** Automatically queries Smart Money flows, DEX trades, Token Screeners, and Whale portfolios across Ethereum, Solana, Arbitrum, Base, and Optimism in one go.
 - **Self-Documenting:** Just type `make` to see all available commands.
+- **Auto-Pilot Mode:** `make watch` runs the full suite every 6 hours — set it and forget it.
+
+## 📸 Sample Output
+
+![Daily Alpha Report](screenshot.png)
 
 ## 🚀 Quick Start
 
@@ -45,12 +50,18 @@ make test
 
 ### 4. Compile Your Alpha
 ```bash
-# Fetch 10 cross-chain data points and generate your daily report
+# Fetch 15 cross-chain data points and generate your daily report
 make alpha
 ```
 
-### 5. Read the Report
-Open the newly generated `daily_report.md` in your favorite Markdown viewer (like VS Code or Obsidian) to review the latest Smart Money netflows and Whale PnL.
+### 5. Auto-Pilot Mode
+```bash
+# Auto-run alpha every 6 hours — set it and forget it
+make watch
+```
+
+### 6. Read the Report
+Open the newly generated `daily_report.md` in your favorite Markdown viewer (like VS Code or Obsidian) to review the latest Smart Money netflows, DEX trades, token screeners, and Whale PnL.
 
 ## 📋 Available Commands
 
@@ -61,8 +72,18 @@ Open the newly generated `daily_report.md` in your favorite Markdown viewer (lik
 | `make auth` | Authenticate using API key from `.env` |
 | `make login API_KEY=xxx` | Authenticate with key passed directly |
 | `make test` | Test a single endpoint |
-| `make alpha` | Generate full daily report (10 API calls) |
+| `make alpha` | Generate full daily report (15 API calls) |
+| `make watch` | Auto-run alpha every 6 hours |
 | `make clean` | Remove old reports |
+
+## 🔍 What Gets Fetched (15 API Calls)
+
+| # | Endpoint | Chains |
+|---|----------|--------|
+| 1-5 | Smart Money Netflow | Ethereum, Solana, Arbitrum, Base, Optimism |
+| 6-10 | Smart Money DEX Trades | Ethereum, Solana, Base, Arbitrum, Optimism |
+| 11-13 | Token Screener | Ethereum, Solana, Base |
+| 14-15 | Whale PnL Summary | vitalik.eth, justinsun.eth |
 
 ---
 
@@ -73,15 +94,15 @@ This project was built specifically for **Week 1 of the Nansen CLI Build Challen
 As the Nansen Intern noted in the kickoff email: *"Give your agent onchain lens."* While many reach for heavy LLM frameworks to build "agents," **Make Alpha** takes a literal approach: the most reliable, fastest, and most useful autonomous agent for a daily trader is a standard UNIX task runner (`make`). It acts autonomously to fetch your data so you don't have to.
 
 **How this hits the 4 core judging criteria:**
-1. **Usefulness:** Saves traders 30+ minutes a day. Instead of clicking through explorers, one command generates a comprehensive daily onchain report locally.
+1. **Usefulness:** Saves traders 30+ minutes a day. Instead of clicking through explorers, one command generates a comprehensive daily onchain report locally. `make watch` automates it completely.
 2. **Creativity:** Applying a 48-year-old C-compiler tool (`make`) to orchestrate cutting-edge Web3 onchain data. 
-3. **Technical Depth:** Bypasses basic scripting by using native `stderr` swallowing (`2>/dev/null`), fail-soft error handling (`-` prefixes), standard JSON formatting (`--pretty`), and dynamic timestamp generation via shell macros.
+3. **Technical Depth:** Bypasses basic scripting by using native `stderr` swallowing (`2>/dev/null`), fail-soft error handling (`-` prefixes), standard JSON formatting (`--pretty`), dynamic timestamp generation via shell macros, and auto-pilot scheduling via `watch` loop.
 4. **Presentation:** A clean, documented repository that perfectly explains the "why" and "how".
 
 **Challenge Checklist:**
 - [x] Install CLI (`make setup`)
-- [x] Make minimum 10 API calls (`make alpha` runs exactly 10 multi-chain queries)
-- [x] Build something real (A developer-first daily reporting pipeline)
+- [x] Make minimum 10 API calls (`make alpha` runs exactly 15 multi-chain queries)
+- [x] Build something real (A developer-first daily reporting pipeline with auto-pilot)
 - [x] Share on X tagging @nansen_ai with #NansenCLI
 
 ---
