@@ -61,7 +61,16 @@ make watch
 ```
 
 ### 6. Read the Report
-Open the newly generated `daily_report.md` in your favorite Markdown viewer (like VS Code or Obsidian) to review the latest Smart Money netflows, DEX trades, token screeners, and Whale PnL.
+```bash
+# See which sections succeeded/failed
+make report
+
+# View a section as a clean table
+make report-1
+
+# View raw JSON data
+make report-1-raw
+```
 
 ## 📋 Available Commands
 
@@ -73,6 +82,9 @@ Open the newly generated `daily_report.md` in your favorite Markdown viewer (lik
 | `make login API_KEY=xxx` | Authenticate with key passed directly |
 | `make test` | Test a single endpoint |
 | `make alpha` | Generate full daily report (15 API calls) |
+| `make report` | Show section-level status (✓/✗) |
+| `make report-N` | View section N as readable table |
+| `make report-N-raw` | View section N as raw JSON |
 | `make watch` | Auto-run alpha every 6 hours |
 | `make clean` | Remove old reports |
 
