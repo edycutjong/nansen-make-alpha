@@ -63,40 +63,59 @@ watch:
 		sleep 21600; \
 	done
 
-# List all reports or view one: make report / make report N=1
+# Show section summary from daily_report.md
 report:
-ifdef N
-	@FILE=$$(ls -t daily_report*.md daily_report*.bak 2>/dev/null | sed -n '$(N)p'); \
-	if [ -z "$$FILE" ]; then \
-		echo "  ❌ Report #$(N) not found"; \
-	else \
+	@echo ""
+	@if [ ! -f $(REPORT_FILE) ]; then \
+		echo "  ❌ No report found — run 'make alpha' first"; \
 		echo ""; \
-		echo "  📄 Showing: $$FILE"; \
-		echo "  ──────────────────────────────────────"; \
-		echo ""; \
-		cat "$$FILE"; \
+		exit 0; \
 	fi
-else
-	@echo ""
-	@echo "  📂 Available Reports"
-	@echo "  ──────────────────────────────────────"
-	@echo ""
-	@FILES=$$(ls -t daily_report*.md daily_report*.bak 2>/dev/null); \
-	if [ -z "$$FILES" ]; then \
-		echo "  (none — run 'make alpha' first)"; \
-	else \
-		i=1; \
-		for f in $$FILES; do \
-			SIZE=$$(wc -c < "$$f" | tr -d ' '); \
-			DATE=$$(stat -f '%Sm' -t '%Y-%m-%d %H:%M' "$$f"); \
-			echo "  $$i. $$f  ($$SIZE bytes · $$DATE)"; \
-			i=$$((i + 1)); \
-		done; \
-		echo ""; \
-		echo "  → View one: make report N=1"; \
+	@TIMESTAMP=$$(head -2 $(REPORT_FILE) | tail -1); \
+	echo "  📊 Daily Alpha Report"; \
+	echo "  $$TIMESTAMP"; \
+	echo ""; \
+	echo "  ── Sections ─────────────────────────────"; \
+	echo ""; \
+	for i in $$(seq 1 15); do \
+		TITLE=$$(grep "^## $$i\." $(REPORT_FILE) | sed 's/^## //' | head -1); \
+		if [ -z "$$TITLE" ]; then \
+			echo "  —  $$i. (missing)"; \
+		else \
+			HAS_ERROR=$$(awk "/^## $$i\./,/^## $$((i+1))\.|$$/" $(REPORT_FILE) | grep -c '"error"'); \
+			HAS_DATA=$$(awk "/^## $$i\./,/^## $$((i+1))\.|$$/" $(REPORT_FILE) | grep -c '"success"'); \
+			if [ "$$HAS_ERROR" -gt 0 ]; then \
+				echo "  ✗  $$TITLE"; \
+			elif [ "$$HAS_DATA" -gt 0 ]; then \
+				echo "  ✓  $$TITLE"; \
+			else \
+				echo "  ✓  $$TITLE"; \
+			fi; \
+		fi; \
+	done; \
+	echo ""; \
+	echo "  → View section: make report-1"; \
+	echo ""
+
+# View a specific section: make report-1 ... make report-15
+report-%:
+	@if [ ! -f $(REPORT_FILE) ]; then \
+		echo "  ❌ No report found — run 'make alpha' first"; \
+		exit 1; \
 	fi
-	@echo ""
-endif
+	@NUM=$$(echo $* | tr -d ' '); \
+	NEXT=$$((NUM + 1)); \
+	TITLE=$$(grep "^## $$NUM\." $(REPORT_FILE) | sed 's/^## //' | head -1); \
+	if [ -z "$$TITLE" ]; then \
+		echo "  ❌ Section $$NUM not found"; \
+		exit 1; \
+	fi; \
+	echo ""; \
+	echo "  📄 $$TITLE"; \
+	echo "  ──────────────────────────────────────"; \
+	echo ""; \
+	awk "/^## $$NUM\./,/^## $$NEXT\./" $(REPORT_FILE) | sed '1d' | sed '$$d'; \
+	echo ""
 
 alpha: clean
 	@echo ""
