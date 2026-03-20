@@ -149,9 +149,18 @@ report-%:
 				printf "  %-10s %14.6f %14.0f %14.0f %12.0f\n", sym, price, vol, nf, mc}'; \
 	else \
 		echo "$$CONTENT" | awk -F'"' ' \
-			/token_symbol/{printf "  Token: %s\n", $$4} \
-			/chain/{printf "  Chain: %s\n", $$4} \
-			/trade_value_usd|net_flow/{gsub(/[, ]/,"",$$0); split($$0,a,":"); printf "  %s: %s\n", $$2, a[2]}'; \
+			/"name"/{name=$$4} \
+			/realized_pnl_usd/{split($$0,a,":"); gsub(/[, ]/,"",a[2]); pnl=a[2]+0} \
+			/realized_pnl_percent/{split($$0,a,":"); gsub(/[, ]/,"",a[2]); pct=a[2]+0} \
+			/win_rate/{split($$0,a,":"); gsub(/[, ]/,"",a[2]); wr=a[2]+0} \
+			/traded_times/{split($$0,a,":"); gsub(/[, ]/,"",a[2]); tt=a[2]+0} \
+			/traded_token_count/{split($$0,a,":"); gsub(/[, ]/,"",a[2]); tc=a[2]+0} \
+			END{ \
+				printf "  Wallet:          %s\n", name; \
+				printf "  Realized PnL:    %s%.2f (%.2f%%)\n", "$$", pnl, pct*100; \
+				printf "  Win Rate:        %.0f%%\n", wr*100; \
+				printf "  Trades:          %.0f\n", tt; \
+				printf "  Tokens Traded:   %.0f\n", tc}'; \
 	fi; \
 	echo ""
 
