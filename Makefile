@@ -6,7 +6,7 @@ REPORT_FILE = daily_report.md
 TIMESTAMP = $(shell date '+%Y-%m-%d %H:%M:%S')
 
 .DEFAULT_GOAL := help
-.PHONY: help setup auth login clean test alpha watch
+.PHONY: help setup auth login clean test alpha watch report
 
 help:
 	@echo "📊 Nansen Make Alpha — Compile your daily onchain alpha"
@@ -16,6 +16,7 @@ help:
 	@echo "  make login  — Authenticate with key: make login API_KEY=xxx"
 	@echo "  make test   — Test single endpoint"
 	@echo "  make alpha  — Generate full daily report (15 API calls)"
+	@echo "  make report — List all saved reports"
 	@echo "  make watch  — Auto-run alpha every 6 hours"
 	@echo "  make clean  — Remove old reports"
 
@@ -61,6 +62,41 @@ watch:
 		echo "💤 Next run in 6 hours..."; \
 		sleep 21600; \
 	done
+
+# List all reports or view one: make report / make report N=1
+report:
+ifdef N
+	@FILE=$$(ls -t daily_report*.md daily_report*.bak 2>/dev/null | sed -n '$(N)p'); \
+	if [ -z "$$FILE" ]; then \
+		echo "  ❌ Report #$(N) not found"; \
+	else \
+		echo ""; \
+		echo "  📄 Showing: $$FILE"; \
+		echo "  ──────────────────────────────────────"; \
+		echo ""; \
+		cat "$$FILE"; \
+	fi
+else
+	@echo ""
+	@echo "  📂 Available Reports"
+	@echo "  ──────────────────────────────────────"
+	@echo ""
+	@FILES=$$(ls -t daily_report*.md daily_report*.bak 2>/dev/null); \
+	if [ -z "$$FILES" ]; then \
+		echo "  (none — run 'make alpha' first)"; \
+	else \
+		i=1; \
+		for f in $$FILES; do \
+			SIZE=$$(wc -c < "$$f" | tr -d ' '); \
+			DATE=$$(stat -f '%Sm' -t '%Y-%m-%d %H:%M' "$$f"); \
+			echo "  $$i. $$f  ($$SIZE bytes · $$DATE)"; \
+			i=$$((i + 1)); \
+		done; \
+		echo ""; \
+		echo "  → View one: make report N=1"; \
+	fi
+	@echo ""
+endif
 
 alpha: clean
 	@echo ""
