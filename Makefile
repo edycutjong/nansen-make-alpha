@@ -142,12 +142,12 @@ alpha: clean
 	
 	@echo "## 14. vitalik.eth PnL Summary" >> $(REPORT_FILE)
 	@echo "\`\`\`json" >> $(REPORT_FILE)
-	-nansen profiler address pnl-summary --address vitalik.eth --pretty >> $(REPORT_FILE) 2>/dev/null || echo '{\n  "error": "Failed to fetch Vitalik data"\n}' >> $(REPORT_FILE)
+	-nansen profiler pnl-summary --address vitalik.eth --pretty >> $(REPORT_FILE) 2>/dev/null || echo '{\n  "error": "Failed to fetch Vitalik data"\n}' >> $(REPORT_FILE)
 	@echo "\`\`\`\n" >> $(REPORT_FILE)
 
 	@echo "## 15. justinsun.eth PnL Summary" >> $(REPORT_FILE)
 	@echo "\`\`\`json" >> $(REPORT_FILE)
-	-nansen profiler address pnl-summary --address justinsun.eth --pretty >> $(REPORT_FILE) 2>/dev/null || echo '{\n  "error": "Failed to fetch Justin Sun data"\n}' >> $(REPORT_FILE)
+	-nansen profiler pnl-summary --address justinsun.eth --pretty >> $(REPORT_FILE) 2>/dev/null || echo '{\n  "error": "Failed to fetch Justin Sun data"\n}' >> $(REPORT_FILE)
 	@echo "\`\`\`\n" >> $(REPORT_FILE)
 
 	@echo "✅ Done! Open $(REPORT_FILE) to view your daily alpha. (15 API calls completed)"
