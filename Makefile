@@ -97,13 +97,14 @@ report:
 	echo "  → View section: make report-1"; \
 	echo ""
 
-# View a specific section: make report-1 ... make report-15
+# View a section as readable table: make report-1
+# View raw JSON: make report-1-raw
 report-%:
 	@if [ ! -f $(REPORT_FILE) ]; then \
 		echo "  ❌ No report found — run 'make alpha' first"; \
 		exit 1; \
 	fi
-	@NUM=$$(echo $* | tr -d ' '); \
+	@NUM=$$(echo "$*" | sed 's/-raw//'); \
 	NEXT=$$((NUM + 1)); \
 	TITLE=$$(grep "^## $$NUM\." $(REPORT_FILE) | sed 's/^## //' | head -1); \
 	if [ -z "$$TITLE" ]; then \
@@ -114,7 +115,44 @@ report-%:
 	echo "  📄 $$TITLE"; \
 	echo "  ──────────────────────────────────────"; \
 	echo ""; \
-	awk "/^## $$NUM\./,/^## $$NEXT\./" $(REPORT_FILE) | sed '1d' | sed '$$d'; \
+	CONTENT=$$(awk "/^## $$NUM\./,/^## $$NEXT\./" $(REPORT_FILE) | sed '1d' | sed '$$d'); \
+	if echo "$*" | grep -q "raw"; then \
+		echo "$$CONTENT"; \
+	elif [ $$NUM -le 5 ]; then \
+		printf "  %-12s %-10s %12s %12s %12s\n" "Token" "Chain" "24h Flow" "7d Flow" "MCap"; \
+		printf "  %-12s %-10s %12s %12s %12s\n" "────────────" "──────────" "────────────" "────────────" "────────────"; \
+		echo "$$CONTENT" | awk -F'"' ' \
+			/token_symbol/{sym=$$4} \
+			/"chain"/{chain=$$4} \
+			/net_flow_24h_usd/{split($$0,a,":"); gsub(/[, ]/,"",a[2]); f24=a[2]+0} \
+			/net_flow_7d_usd/{split($$0,a,":"); gsub(/[, ]/,"",a[2]); f7=a[2]+0} \
+			/market_cap_usd/{split($$0,a,":"); gsub(/[, ]/,"",a[2]); mc=a[2]+0; \
+				printf "  %-12s %-10s %12.0f %12.0f %12.0f\n", sym, chain, f24, f7, mc}'; \
+	elif [ $$NUM -le 10 ]; then \
+		printf "  %-10s %-10s %-18s %12s\n" "Bought" "Sold" "Trader" "Value"; \
+		printf "  %-10s %-10s %-18s %12s\n" "──────────" "──────────" "──────────────────" "────────────"; \
+		echo "$$CONTENT" | awk -F'"' ' \
+			/token_bought_symbol/{buy=$$4} \
+			/token_sold_symbol/{sell=$$4} \
+			/trader_address_label/{label=$$4; if(label=="") label="Unknown"} \
+			/trade_value_usd/{gsub(/[, ]/,"",$$0); split($$0,a,":"); val=a[2]+0; \
+				printf "  %-10s %-10s %-18s %12.2f\n", buy, sell, substr(label,1,16), val}'; \
+	elif [ $$NUM -le 13 ]; then \
+		printf "  %-10s %14s %14s %14s %12s\n" "Token" "Price" "Volume" "Netflow" "MCap"; \
+		printf "  %-10s %14s %14s %14s %12s\n" "──────────" "──────────────" "──────────────" "──────────────" "────────────"; \
+		echo "$$CONTENT" | awk -F'"' ' \
+			/token_symbol/{sym=$$4} \
+			/"price_usd"/{gsub(/[, ]/,"",$$0); split($$0,a,":"); price=a[2]+0} \
+			/"volume"/{gsub(/[, ]/,"",$$0); split($$0,a,":"); vol=a[2]+0} \
+			/"netflow"/{gsub(/[, ]/,"",$$0); split($$0,a,":"); nf=a[2]+0} \
+			/market_cap_usd/{split($$0,a,":"); gsub(/[, ]/,"",a[2]); mc=a[2]+0; \
+				printf "  %-10s %14.6f %14.0f %14.0f %12.0f\n", sym, price, vol, nf, mc}'; \
+	else \
+		echo "$$CONTENT" | awk -F'"' ' \
+			/token_symbol/{printf "  Token: %s\n", $$4} \
+			/chain/{printf "  Chain: %s\n", $$4} \
+			/trade_value_usd|net_flow/{gsub(/[, ]/,"",$$0); split($$0,a,":"); printf "  %s: %s\n", $$2, a[2]}'; \
+	fi; \
 	echo ""
 
 alpha: clean
