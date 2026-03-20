@@ -2,9 +2,6 @@
 # NANSEN "MAKE ALPHA" CLI ORCHESTRATOR
 # ==========================================
 
--include .env
-export
-
 REPORT_FILE = daily_report.md
 TIMESTAMP = $(shell date '+%Y-%m-%d %H:%M:%S')
 
